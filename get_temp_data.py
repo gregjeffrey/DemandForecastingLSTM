@@ -6,10 +6,14 @@ import pandas as pd
 
 # Input params
 API = ''
+boston = 42.3601, -71.0589
+providence = 41.8240, -71.4128
+portland = 45.4231, -122.6765
+springfield = 42.1015, -72.5898
 
 
-def get_weather_data(api_key, filename, start_date=date(2011,4,1), end_date=date(2018,4,1),
-                     coordinates=(42.3601, -71.0589)):
+def get_weather_data(api_key, filename, start_date=date(2011, 4, 1), end_date=date(2018, 4, 1),
+                     coordinates=boston):
     """
     Parameters
     ----------
