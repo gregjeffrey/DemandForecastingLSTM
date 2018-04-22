@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[71]:
+# In[1]:
 
 
 import pandas as pd
@@ -16,28 +16,31 @@ import math, random
 import matplotlib.pyplot as plt
 
 
-# In[72]:
+# In[2]:
 
 
 data = pd.read_csv('full_data.csv',delimiter=',',header=0,index_col=0)
+
+temp = data['apparentTemperature']
+temp = (temp - temp.min())/(temp.max()-temp.min())
+hum = data['humidity']
+hum = (hum - hum.min())/(hum.max() - hum.min())
+power = data['MWh']
+power = (power - power.min())/(power.max() - power.min())
+
 net_input_dict = dict({
-    'apparentTemperature':data['apparentTemperature'],
-    'dewPoint':data['dewPoint'],
-    'humidity':data['humidity'],
-    'pressure':data['pressure'],
-    'temperature':data['temperature'],
-    'MWh':data['MWh']
+    'temperature':temp,
+    'humidity':hum,
+    'MWh':power
     })
 
 df = pd.DataFrame(net_input_dict) ##Input data is a 61392x9 matrix
 
-net_inputs = (df - df.min()) / (df.max() - df.min())
-net_targets = net_inputs['MWh'].values #Targets are a 61392 column vector
-net_inputs = net_inputs.values
+net_targets = data['MWh'].values #Targets are a 61392 column vector
+net_inputs = df.values
 
 
-
-# In[73]:
+# In[3]:
 
 
 ##Define the model
@@ -58,74 +61,66 @@ class SimpleRNN(nn.Module):
         
     def forward(self, input, hidden=None, force=True, steps=0):
         if force or steps == 0: steps = len(inputs) ##Sets the # of steps to the # of inputs
-        outputs = Variable(torch.zeros(steps, 1, 1)) ##Initializes the output tensor (row vector of # of steps)
+            
+        outputs = Variable(torch.zeros(steps, 1, 1)) ##Initializes the output tensor (vector of # of steps)
+
         #unsqueeze method adds a dimension of size 1
         #Linear layer
         #Input size: (N,1,num_features)
         #Outut size: (N,1,hidden_size)
         lstm_input = self.inp(inputs.view(-1,1,num_features)) ##Applies the data to the input layer, returns input variable
-        
+        print(lstm_input.shape)
         #LSTM Layer
         #Input size: (seq_length,batch,input_size)
         #Output size: (seq_length,batch,hidden_size)
         lstm_output, hidden = self.lstm(lstm_input, hidden) ##Applies the input variable to the rnn layer(s), returns output and hidden states
+        print(lstm_output.shape)
         
         #Linear Layer
         #Input size: (N,1,hidden_size)
         #Output size:(N,1,1)
         output = self.out(lstm_output.squeeze(1)) ##Applies the LSTM output to the linear output layer, returns output
-        
+        print(output.shape)
         return output, hidden
     
 
 
-
-
-# In[74]:
+# In[7]:
 
 
 n_epochs = 1
 hidden_size = 1
-num_features=6
+num_features=net_inputs.shape[1]
 
-model = SimpleRNN(hidden_size,num_features) #Creates the model defined above
+model = SimpleRNN(hidden_size,num_features).cuda()
 criterion = nn.MSELoss() #Sets loss function to MSE
 optimizer = optim.SGD(model.parameters(), lr=0.01) 
 
 losses = np.zeros(n_epochs) # #Initializes loss variable, for plotting
 
+#torch.cuda.get_device_name(0)
+#Network training
+
+inputs = Variable(torch.from_numpy(net_inputs[:-1]).float()).cuda()
+targets = Variable(torch.from_numpy(net_targets[1:]).float()).cuda()
+ 
+print(torch.cuda.get_device_name(0))    
 
 
 # In[ ]:
 
 
-#torch.cuda.get_device_name(0)
-#Network training
-
-inputs = Variable(torch.from_numpy(net_inputs[:-1]).float())#.cuda
-targets = Variable(torch.from_numpy(net_targets[1:]).float())#.cuda
-
-
-#Prepare weekly moving windows
-sequences = Variable(torch.zeros(len(inputs)-24*7,24*7,6))
-for i in range(0,len(inputs)-24*7):
-    sequences[i,:,:] = inputs[i:i+24*7,:]  
-    
-    
 for epoch in range(n_epochs):
-    
-    for seq in sequences:
-        outputs, hidden = model(seq, None) #Input is a weekly moving window (168x6)
 
-        optimizer.zero_grad() ##Clears the gradients
-        loss = criterion(outputs, targets) ##Calculates loss
-        loss.backward() ##Performs backpropagation
-        optimizer.step()
+    outputs, hidden = model(inputs, None)
+    optimizer.zero_grad() ##Clears the gradients
+    loss = criterion(outputs, targets) ##Calculates loss
+    loss.backward() ##Performs backpropagation
+    optimizer.step()
 
-        losses[epoch] += loss.data[0]
+    losses[epoch] += loss.data[0]
 
-        if epoch > 0:
-            print(epoch, loss.data[0])
+    print(epoch, loss.data[0])
 
     # Use some plotting library
     # if epoch % 10 == 0:
@@ -138,25 +133,9 @@ for epoch in range(n_epochs):
         # show_plot('generated', outputs.data.view(-1), True)
 
 
-#Test some data
-output = model(seq[-1,:,:],None)
+
+# In[8]:
 
 
-# In[54]:
-
-
-#targets = Variable(torch.from_numpy(net_targets[1:]).float())#.cuda
-#plt.plot(targets.data.numpy())
-
-#preds = pd.read_csv('preds.csv')
-#plt.plot(preds['0'])
-
-
-# In[1]:
-
-
-
-
-    
-
+plt.plot(outputs.data.numpy())
 
