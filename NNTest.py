@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[4]:
 
 
 import pandas as pd
@@ -15,7 +15,7 @@ import numpy as np
 import math, random
 
 
-# In[2]:
+# In[52]:
 
 
 data = pd.read_csv('full_data.csv',delimiter=',',header=0,index_col=0)
@@ -28,13 +28,15 @@ net_input_dict = dict({
     'MWh':data['MWh']
     })
 
-net_inputs = pd.DataFrame(net_input_dict).values ##Input data is a 61392x9 matrix
-net_targets = data['MWh'].values #Targets are a 61392 column vector
-net_inputs.shape
+df = pd.DataFrame(net_input_dict) ##Input data is a 61392x9 matrix
+
+net_inputs = (df - df.mean()) / (df.max() - df.min())
+net_targets = net_inputs['MWh'].values #Targets are a 61392 column vector
+
+net_inputs = net_inputs.values
 
 
-
-# In[13]:
+# In[28]:
 
 
 ##Define the model
@@ -61,7 +63,7 @@ class SimpleRNN(nn.Module):
         #Linear layer
         #Input size: (N,1,num_features)
         #Outut size: (N,1,hidden_size)
-        lstm_input = self.inp(inputs.view(-1,num_features)).unsqueeze(1) ##Applies the data to the input layer, returns input variable
+        lstm_input = self.inp(inputs.view(-1,1,num_features)) ##Applies the data to the input layer, returns input variable
         print(lstm_input.shape)
         
         #LSTM Layer
@@ -82,11 +84,11 @@ class SimpleRNN(nn.Module):
 
 
 
-# In[21]:
+# In[29]:
 
 
-n_epochs = 2
-hidden_size = 3
+n_epochs = 50
+hidden_size = 20
 num_features=6
 
 model = SimpleRNN(hidden_size,num_features) #Creates the model defined above
@@ -97,7 +99,7 @@ losses = np.zeros(n_epochs) # #Initializes loss variable, for plotting
 
 
 
-# In[ ]:
+# In[30]:
 
 
 #Network training
@@ -135,13 +137,15 @@ for epoch in range(n_epochs):
 
 
 
-# In[20]:
+# In[51]:
 
 
+import matplotlib.pyplot as plt
+plt.plot(outputs.data.numpy())
+plt.plot(targets.data.numpy())
 
 
-
-# In[12]:
+# In[54]:
 
 
 
