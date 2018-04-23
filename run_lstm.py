@@ -89,10 +89,10 @@ for epoch in range(EPOCHS):
 # Generate date tag and path for outputs
 time = datetime.datetime.now()
 date_tag = '{0}{1}_{2}{3}'.format(time.month, time.day, time.hour, time.minute)
-preds_path = os.getcwd() + '\predictions\{}.csv'.format(date_tag)
-model_path = os.getcwd() + '\models\model_{}.pkl'.format(date_tag)
-model_dict_path = os.getcwd() + '\models\model_{}_state_dict.pkl'.format(date_tag)
-loss_path = os.getcwd() + 'losses\loss_{}.csv'.format(date_tag)
+preds_path = os.getcwd() + '/predictions/{}.csv'.format(date_tag)
+model_path = os.getcwd() + '/models/model_{}.pkl'.format(date_tag)
+model_dict_path = os.getcwd() + '/models/model_{}_state_dict.pkl'.format(date_tag)
+loss_path = os.getcwd() + '/losses/loss_{}.csv'.format(date_tag)
 
 # Save outputs
 torch.save(model, model_path)
