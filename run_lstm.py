@@ -10,27 +10,31 @@ import numpy as np
 
 # ---------------------------- PARAMS  ------------------------------- #
 EPOCHS = 1000
+LEARNING_RATE = 0.1
+HIDDEN_DIMS = 75
+NUM_LSTM_CELLS = 3
 
 
 # ------------------------ Define Network  --------------------------- #
 class LSTM(torch.nn.Module):
-    def __init__(self, input_dimensions, hidden_dimensions):
+    def __init__(self, input_dimensions, hidden_dimensions, num_lstm_cells=1, lstm_dropout=0.1):
         super(LSTM, self).__init__()
 
         # Parameters
         self.input_dim = input_dimensions
         self.hidden_dim = hidden_dimensions
+        self.num_lstm_cells = num_lstm_cells
+        self.lstm_dropout = lstm_dropout
 
         # Network layers
-        self.lstm = nn.LSTM(input_dimensions, hidden_dimensions, dropout=0.1)
-        self.lstm2 = nn.LSTM(hidden_dimensions, hidden_dimensions, dropout=0.1)
-        self.fullycn = nn.fcn(hidden_dimensions, 50)
-        self.out = nn.Linear(input_dimensions, 1, bias=False)
+        self.lstm = nn.LSTM(input_dimensions, hidden_dimensions, dropout=0.1, num_layers=num_lstm_cells)
+        self.c1 = nn.Linear(hidden_dimensions, 25)
+        self.c2 = nn.Linear(25, 25)
+        self.out = nn.Linear(25, 1, bias=False)
 
     def forward(self, x):
         h_1, c_1 = self.lstm(x)
-        h_2, c_2 = self.lstm(h_1)
-        output = self.fullycn(h_2.squeeze(1))
+        output = self.c1(h_1.squeeze(1))
         output = self.out(output)
         return output
 
@@ -56,13 +60,12 @@ inputs = inputs.unsqueeze(1)
 # -------------------- Instantiate LSTM Network  --------------------- #
 # Model Params
 input_dim = inputs.shape[2]
-hidden_dim = 75
+hidden_dim = HIDDEN_DIMS
 
 # Create model and necessary functions
-model = LSTM(input_dim, hidden_dim)
+model = LSTM(input_dim, hidden_dim, num_lstm_cells=NUM_LSTM_CELLS, hidden_dim=HIDDEN_DIMS)
 criterion = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr=0.10)
-
+optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
 # --------------------------- Train Network -------------------------= #
 losses = []
