@@ -28,9 +28,8 @@ class LSTM(torch.nn.Module):
 
         # Network layers
         self.lstm = nn.LSTM(input_dimensions, hidden_dimensions, dropout=0.1, num_layers=num_lstm_cells)
-        self.c1 = nn.Linear(hidden_dimensions, 25)
-        self.c2 = nn.Linear(25, 25)
-        self.out = nn.Linear(25, 1, bias=False)
+        self.c1 = nn.Linear(hidden_dimensions, hidden_dimensions)
+        self.out = nn.Linear(hidden_dimensions, 1, bias=False)
 
     def forward(self, x):
         h_1, c_1 = self.lstm(x)
@@ -46,15 +45,16 @@ cols = ['apparentTemperature', 'dewPoint', 'humidity',
 
 df = df[cols]
 df['next_pow'] = df.shift(-1).MWh
+df = df[:-1]
 
 # Obtain target data
 y = np.array(df.next_pow.values)
-target = Variable(torch.from_numpy(y)).float()
+target = Variable(torch.from_numpy(y)).float().cuda()
 
 # Normalize input data
 df = (df - df.mean())/df.std()
 x = np.array(df.drop('next_pow', axis=1).values)
-inputs = Variable(torch.from_numpy(x)).float()
+inputs = Variable(torch.from_numpy(x)).float().cuda()
 inputs = inputs.unsqueeze(1)
 
 # -------------------- Instantiate LSTM Network  --------------------- #
@@ -63,7 +63,7 @@ input_dim = inputs.shape[2]
 hidden_dim = HIDDEN_DIMS
 
 # Create model and necessary functions
-model = LSTM(input_dim, hidden_dim, num_lstm_cells=NUM_LSTM_CELLS, hidden_dim=HIDDEN_DIMS)
+model = LSTM(input_dim, hidden_dim, num_lstm_cells=NUM_LSTM_CELLS, hidden_dim=HIDDEN_DIMS).cuda()
 criterion = nn.MSELoss()
 optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
@@ -87,14 +87,16 @@ for epoch in range(EPOCHS):
     print('Epoch: {0}/{1}, Loss: {2}'.format(epoch, EPOCHS, mse))
 
 
-# Generate date tag
+# Generate date tag and path for outputs
 time = datetime.datetime.now()
 date_tag = '{0}{1}_{2}{3}'.format(time.month, time.day, time.hour, time.minute)
 preds_path = os.getcwd() + '\predictions\{}.csv'.format(date_tag)
 model_path = os.getcwd() + '\models\model_{}.pkl'.format(date_tag)
 model_dict_path = os.getcwd() + '\models\model_{}_state_dict.pkl'.format(date_tag)
+loss_path = os.getcwd() + 'losses\loss_{}.csv'.format(date_tag)
 
-# Save
+# Save outputs
 torch.save(model, model_path)
 torch.save(model.state_dict(), model_dict_path.format(date_tag))
 pd.DataFrame(outputs.cpu().data.numpy()).to_csv(preds_path)
+pd.DataFrame(losses.cpu()).to_csv('loss_path')
