@@ -10,9 +10,9 @@ import numpy as np
 
 # ---------------------------- PARAMS  ------------------------------- #
 EPOCHS = 1000
-LEARNING_RATE = 0.1
-HIDDEN_DIMS = 75
-NUM_LSTM_CELLS = 3
+LEARNING_RATE = 0.2
+HIDDEN_DIMS = 25
+NUM_LSTM_CELLS = 1
 
 # ------------------------ Define Network  --------------------------- #
 class LSTM(torch.nn.Module):
@@ -39,8 +39,8 @@ class LSTM(torch.nn.Module):
 
 # ---------------------- Load and Process Data  ---------------------- #
 df = pd.read_csv('full_data.csv', index_col=0)
-cols = ['apparentTemperature', 'dewPoint', 'humidity',
-        'pressure', 'temperature', 'MWh']
+cols = ['apparentTemperature', 'humidity',
+        'pressure', 'MWh']
 
 df = df[cols]
 df['next_pow'] = df.shift(-1).MWh
@@ -89,13 +89,13 @@ for epoch in range(EPOCHS):
 # Generate date tag and path for outputs
 time = datetime.datetime.now()
 date_tag = '{0}{1}_{2}{3}'.format(time.month, time.day, time.hour, time.minute)
-preds_path = os.getcwd() + '\predictions\{}.csv'.format(date_tag)
-model_path = os.getcwd() + '\models\model_{}.pkl'.format(date_tag)
-model_dict_path = os.getcwd() + '\models\model_{}_state_dict.pkl'.format(date_tag)
-loss_path = os.getcwd() + 'losses\loss_{}.csv'.format(date_tag)
+preds_path = os.getcwd() + '/predictions/{}.csv'.format(date_tag)
+model_path = os.getcwd() + '/models/model_{}.pkl'.format(date_tag)
+model_dict_path = os.getcwd() + '/models/model_{}_state_dict.pkl'.format(date_tag)
+loss_path = os.getcwd() + '/losses/loss_{}.csv'.format(date_tag)
 
 # Save outputs
 torch.save(model, model_path)
 torch.save(model.state_dict(), model_dict_path.format(date_tag))
 pd.DataFrame(outputs.cpu().data.numpy()).to_csv(preds_path)
-pd.DataFrame(losses.cpu()).to_csv(loss_path)
+pd.DataFrame(losses).to_csv(loss_path)
