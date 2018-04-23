@@ -14,7 +14,6 @@ LEARNING_RATE = 0.1
 HIDDEN_DIMS = 75
 NUM_LSTM_CELLS = 3
 
-
 # ------------------------ Define Network  --------------------------- #
 class LSTM(torch.nn.Module):
     def __init__(self, input_dimensions, hidden_dimensions, num_lstm_cells=1, lstm_dropout=0.1):
@@ -63,7 +62,7 @@ input_dim = inputs.shape[2]
 hidden_dim = HIDDEN_DIMS
 
 # Create model and necessary functions
-model = LSTM(input_dim, hidden_dim, num_lstm_cells=NUM_LSTM_CELLS, hidden_dim=HIDDEN_DIMS).cuda()
+model = LSTM(input_dim, HIDDEN_DIMS, num_lstm_cells=NUM_LSTM_CELLS).cuda()
 criterion = nn.MSELoss()
 optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
@@ -99,4 +98,4 @@ loss_path = os.getcwd() + 'losses\loss_{}.csv'.format(date_tag)
 torch.save(model, model_path)
 torch.save(model.state_dict(), model_dict_path.format(date_tag))
 pd.DataFrame(outputs.cpu().data.numpy()).to_csv(preds_path)
-pd.DataFrame(losses.cpu()).to_csv('loss_path')
+pd.DataFrame(losses.cpu()).to_csv(loss_path)
