@@ -56,10 +56,10 @@ def save(model, outputs, losses, test_losses=None, save=DEFAULT_SAVE):
         pd.DataFrame(outputs.cpu().data.numpy()).to_csv(preds_path)
 
     if save[2] and losses:
-        pd.DataFrame(losses.cpu()).to_csv(loss_path)
+        pd.DataFrame(losses).to_csv(loss_path)
 
     if save[3] and test_losses:
-        pd.DataFrame(test_losses.cpu()).to_csv(test_loss_path)
+        pd.DataFrame(test_losses).to_csv(test_loss_path)
 
 
 def train(lstm_model, epochs, training_inputs, training_targets,
