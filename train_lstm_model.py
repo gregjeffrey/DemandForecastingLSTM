@@ -4,7 +4,7 @@ from torch.autograd import Variable
 
 # ---------------------- Load and Process Data  ---------------------- #
 data = pd.read_csv('full_data.csv', index_col=0)
-cols = ['apparentTemperature', 'humidity','MWh']
+cols = ['apparentTemperature', 'humidity', 'MWh']
 df = data[cols]
 
 if NORMALIZATION == 'min_max':

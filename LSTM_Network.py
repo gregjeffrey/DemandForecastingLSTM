@@ -63,8 +63,8 @@ def save(model, outputs, losses, test_losses, save=DEFAULT_SAVE):
 
 
 def train(lstm_model, epochs, training_inputs, training_targets,
-          window_length=WINDOW_LENGTH, num_windows=NUM_WINDOWS, test_inputs=None,
-          test_targets=None, lr=LEARNING_RATE):
+          window_length=WINDOW_LENGTH, num_windows=NUM_WINDOWS, forecast=FORECAST_HORIZON,
+          test_inputs=None, test_targets=None, lr=LEARNING_RATE):
     """
     Trains our LSTM NN model.
 
@@ -120,9 +120,9 @@ def train(lstm_model, epochs, training_inputs, training_targets,
         # Iterate over number of windows in an epoch
         for i in range(num_windows):
             # Randomly choose windows of desired length for training
-            index = round(random.random()*(len(training_inputs)-window_length-FORECAST_HORIZON))
+            index = round(random.random()*(len(training_inputs)-window_length-forecast))
             window = training_inputs[index:index+window_length].unsqueeze(1)
-            target = training_targets[index+FORECAST_HORIZON:index+window_length+FORECAST_HORIZON]
+            target = training_targets[index+forecast:index+window_length+forecast]
 
             # Zero gradients
             optimizer.zero_grad()
@@ -136,9 +136,9 @@ def train(lstm_model, epochs, training_inputs, training_targets,
 
             # Track test error
             if test_info:
-                index = round(random.random()*(len(test_inputs)-window_length-FORECAST_HORIZON))
+                index = round(random.random()*(len(test_inputs)-window_length-forecast))
                 window = test_inputs[index:index+window_length].unsqueeze(1)
-                targets = test_targets[index+FORECAST_HORIZON:index+window_length+FORECAST_HORIZON]
+                targets = test_targets[index+forecast:index+window_length+forecast]
                 test_output = lstm_model(window)
                 test_mses.append(criterion(test_output, targets))
 
