@@ -9,9 +9,9 @@ import datetime
 import os
 
 # ---------------------------- PARAMS  ------------------------------- #
-EPOCHS = 1  # Number of epochs to train model for
-LEARNING_RATE = 0.1  # Learning rate
-HIDDEN_DIMS = 1  # Number of hidden dims
+EPOCHS = 2000  # Number of epochs to train model for
+LEARNING_RATE = 0.2  # Learning rate
+HIDDEN_DIMS = 25  # Number of hidden dims
 NUM_LSTM_CELLS = 1  # Number of LSTM cells in network
 NUM_WINDOWS = 5  # Number of windows / epoch
 WINDOW_LENGTH = 8760  # Number of hours for window (8760 = 1 year)
