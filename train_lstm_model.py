@@ -40,5 +40,5 @@ model = LSTM(input_dim, HIDDEN_DIMS, num_lstm_cells=NUM_LSTM_CELLS).cuda()
 
 
 # --------------------------- Train Network -------------------------= #
-losses, test_losses = train(model, EPOCHS, training_inputs, training_targets)
-save(model, [], losses, test_losses)
+losses = train(model, EPOCHS, training_inputs, training_targets)
+save(model, [], losses)

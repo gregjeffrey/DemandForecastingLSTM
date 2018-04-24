@@ -22,7 +22,7 @@ CURRENT_EPOCH = 0  # Keep track of current epoch if training is paused
 
 
 # -------------------------- Functions ----------------------------- #
-def save(model, outputs, losses, test_losses, save=DEFAULT_SAVE):
+def save(model, outputs, losses, test_losses=None, save=DEFAULT_SAVE):
     """
     Saves desired parameters.
 
@@ -52,13 +52,13 @@ def save(model, outputs, losses, test_losses, save=DEFAULT_SAVE):
         torch.save(model, model_path)
         torch.save(model.state_dict(), model_dict_path.format(date_tag))
 
-    if save[1]:
+    if save[1] and outputs:
         pd.DataFrame(outputs.cpu().data.numpy()).to_csv(preds_path)
 
-    if save[2]:
+    if save[2] and losses:
         pd.DataFrame(losses.cpu()).to_csv(loss_path)
 
-    if save[3]:
+    if save[3] and test_losses:
         pd.DataFrame(test_losses.cpu()).to_csv(test_loss_path)
 
 
