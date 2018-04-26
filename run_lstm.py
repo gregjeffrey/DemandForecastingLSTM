@@ -68,7 +68,7 @@ test_targets = Variable(torch.from_numpy(test_targets).float()).cuda()
 
 # -------------------- Instantiate LSTM Network  --------------------- #
 # Model Params
-input_dim = inputs.shape[2]
+input_dim = training_inputs.shape[1]
 hidden_dim = HIDDEN_DIMS
 
 # Create model and necessary functions
